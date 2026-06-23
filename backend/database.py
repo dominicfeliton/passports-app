@@ -1,5 +1,6 @@
 import os
 import re as _re
+from urllib.parse import urlencode, parse_qs, urlparse, urlunparse
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 
@@ -7,11 +8,17 @@ _raw_url = os.environ.get(
     "DATABASE_URL",
     "postgresql+asyncpg://postgres:postgres@localhost:5432/passports",
 )
-DATABASE_URL = _re.sub(
+_raw_url = _re.sub(
     r"^postgres(?:ql)?(?:\+[a-z]+)?://",
     "postgresql+asyncpg://",
     _raw_url,
 )
+# Ensure channel_binding=disable is in the query string for asyncpg/Neon compat
+_parsed = urlparse(_raw_url)
+_qs = parse_qs(_parsed.query)
+if "channel_binding" not in _qs:
+    _qs["channel_binding"] = ["disable"]
+DATABASE_URL = urlunparse(_parsed._replace(query=urlencode(_qs, doseq=True)))
 
 
 class Base(DeclarativeBase):
@@ -22,7 +29,8 @@ def _make_engine():
     return create_async_engine(
         DATABASE_URL,
         echo=False,
-        connect_args={"channel_binding": "disable"},
+        connect_args={"ssl": "require", "channel_binding": "disable"},
+        pool_pre_ping=True,
     )
 
 
