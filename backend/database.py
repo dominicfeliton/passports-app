@@ -9,7 +9,7 @@ _raw_url = os.environ.get(
 )
 DATABASE_URL = _re.sub(
     r"^postgres(?:ql)?(?:\+[a-z]+)?://",
-    "postgresql+asyncpg://",
+    "postgresql+psycopg://",
     _raw_url,
 )
 
