@@ -1,6 +1,7 @@
 import csv
 import io
 import json
+import logging
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
@@ -21,13 +22,23 @@ from .auth import verify_password, create_token, decode_token
 from .sse import notification_manager
 from .seed import seed_database
 
+logger = logging.getLogger(__name__)
+
+_startup_error: str | None = None
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
-    async for db in get_db():
-        await seed_database(db)
-        break
+    global _startup_error
+    try:
+        await init_db()
+        async for db in get_db():
+            await seed_database(db)
+            break
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        _startup_error = f"Database init failed: {e}"
+        logger.error(_startup_error)
     yield
 
 
@@ -314,4 +325,15 @@ async def get_stats(
 
 @app.get("/api/health")
 async def health():
+    if _startup_error:
+        return {"status": "error", "detail": _startup_error}
     return {"status": "ok"}
+
+
+@app.get("/api/debug")
+async def debug():
+    from .database import DATABASE_URL
+    return {
+        "startup_error": _startup_error,
+        "database_url_scheme": DATABASE_URL.split("://")[0] if DATABASE_URL else "none",
+    }
