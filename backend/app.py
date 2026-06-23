@@ -1,15 +1,13 @@
 import csv
 import io
 import json
-import asyncio
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
-from sqlalchemy import select, func, and_
+from fastapi.responses import StreamingResponse
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .database import get_db, init_db
@@ -20,7 +18,7 @@ from .schemas import (
     QuestionUpdate, QuestionConfig, StatsResponse,
 )
 from .auth import verify_password, create_token, decode_token
-from .sse import sse_manager
+from .sse import notification_manager
 from .seed import seed_database
 
 
@@ -34,12 +32,6 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="UC San Diego Passports API", lifespan=lifespan)
-
-# Serve built frontend (production) — mount after API routes so /api/* takes precedence
-import os
-STATIC_DIR = os.path.join(os.path.dirname(__file__), "..", "static")
-if os.path.isdir(STATIC_DIR):
-    app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
 
 app.add_middleware(
     CORSMiddleware,
@@ -103,7 +95,7 @@ async def checkin(body: CheckinRequest, db: AsyncSession = Depends(get_db)):
     await db.refresh(visitor)
 
     # Notify dashboard clients via SSE
-    await sse_manager.publish(body.location_id, "checkin", {
+    await notification_manager.publish(body.location_id, "checkin", {
         "id": visitor.id,
         "first_name": visitor.first_name,
         "last_name": visitor.last_name,
@@ -315,43 +307,6 @@ async def get_stats(
         missing_citizenship_count=len(missing("citizenship")),
         missing_id_count=len(missing("id")),
         missing_payment_count=len(missing("payment")),
-    )
-
-
-# --- SSE Events ---
-
-@app.get("/events")
-async def sse_events(
-    location: str = Query(...),
-    token: str = Query(...),
-):
-    """Server-Sent Events endpoint for real-time dashboard updates."""
-    payload = decode_token(token)
-    if payload is None or payload["location_id"] != location:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    queue = sse_manager.subscribe(location)
-
-    async def event_generator():
-        try:
-            # Send initial connection event
-            yield f"event: connected\ndata: {json.dumps({'status': 'ok'})}\n\n"
-            while True:
-                message = await queue.get()
-                yield message
-        except asyncio.CancelledError:
-            pass
-        finally:
-            sse_manager.unsubscribe(location, queue)
-
-    return StreamingResponse(
-        event_generator(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",
-        },
     )
 
 

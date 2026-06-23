@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useApp } from '../../context/AppContext'
+import { t } from '../../services/translations'
 
 interface Stats {
   total: number
@@ -17,9 +18,10 @@ interface Stats {
 }
 
 export default function Reports() {
-  const { auth } = useApp()
+  const { auth, currentLanguage } = useApp()
   const [stats, setStats] = useState<Stats | null>(null)
   const locId = auth?.locationId || 'csc'
+  const lang = currentLanguage
 
   const fetchStats = useCallback(async () => {
     if (!auth) return
@@ -38,7 +40,7 @@ export default function Reports() {
     return () => window.removeEventListener('visitor-update', handler)
   }, [fetchStats])
 
-  if (!stats) return <p style={{ color: '#999' }}>Loading stats...</p>
+  if (!stats) return <p style={{ color: '#999' }}>{t('visitorLog.loading', undefined, lang)}</p>
 
   const barColor = '#00629B'
   const dangerColor = '#E05D5D'
@@ -66,12 +68,12 @@ export default function Reports() {
 
   return (
     <>
-      <h2 className="page-header">Reports</h2>
+      <h2 className="page-header">{t('reports.title', undefined, lang)}</h2>
 
       <div className="row" style={{ marginBottom: '2rem' }}>
         <div className="col-sm-4">
           <div className="panel panel-primary">
-            <div className="panel-heading"><h3 className="panel-title">Total Visits</h3></div>
+            <div className="panel-heading"><h3 className="panel-title">{t('reports.totalVisits', undefined, lang)}</h3></div>
             <div className="panel-body text-center">
               <span style={{ fontSize: '2.5rem', fontWeight: 700 }}>{stats.total}</span>
             </div>
@@ -79,7 +81,7 @@ export default function Reports() {
         </div>
         <div className="col-sm-4">
           <div className="panel panel-primary">
-            <div className="panel-heading"><h3 className="panel-title">Preparedness Rate</h3></div>
+            <div className="panel-heading"><h3 className="panel-title">{t('reports.preparationRate', undefined, lang)}</h3></div>
             <div className="panel-body text-center">
               <span style={{ fontSize: '2.5rem', fontWeight: 700 }}>{stats.prep_rate}%</span>
             </div>
@@ -87,7 +89,7 @@ export default function Reports() {
         </div>
         <div className="col-sm-4">
           <div className="panel panel-primary">
-            <div className="panel-heading"><h3 className="panel-title">Walk-in Ratio</h3></div>
+            <div className="panel-heading"><h3 className="panel-title">{t('reports.walkinRatio', undefined, lang)}</h3></div>
             <div className="panel-body text-center">
               <span style={{ fontSize: '2.5rem', fontWeight: 700 }}>{stats.walk_in_percent}%</span>
             </div>
@@ -96,7 +98,7 @@ export default function Reports() {
       </div>
 
       <div className="panel panel-default">
-        <div className="panel-heading"><h3 className="panel-title">Visits by Service Type</h3></div>
+        <div className="panel-heading"><h3 className="panel-title">{t('reports.byService', undefined, lang)}</h3></div>
         <div className="panel-body">
           <Bar value={stats.passports_count} max={maxService} color={barColor} label="Passports" />
           <Bar value={stats.notary_count} max={maxService} color={barColor} label="Notary" />
@@ -106,10 +108,10 @@ export default function Reports() {
       </div>
 
       <div className="panel panel-default">
-        <div className="panel-heading"><h3 className="panel-title">Passport Document Issues</h3></div>
+        <div className="panel-heading"><h3 className="panel-title">{t('reports.documentIssues', undefined, lang)}</h3></div>
         <div className="panel-body">
           <p style={{ color: '#6B7C96', fontSize: '0.85rem' }}>
-            Among {stats.passports_count} passport visit(s).
+            {t('reports.among', { count: stats.passports_count }, lang)}
           </p>
           <Bar value={stats.incomplete_app_count} max={maxMissing} color={dangerColor} label="Incomplete Application" />
           <Bar value={stats.missing_photo_count} max={maxMissing} color={dangerColor} label="Missing Photo" />

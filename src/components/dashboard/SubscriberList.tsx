@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useApp } from '../../context/AppContext'
+import { t } from '../../services/translations'
 
 interface Subscriber {
   first_name: string
@@ -10,11 +11,11 @@ interface Subscriber {
 }
 
 export default function SubscriberList() {
-  const { auth } = useApp()
+  const { auth, currentLanguage } = useApp()
   const [subscribers, setSubscribers] = useState<Subscriber[]>([])
   const [loading, setLoading] = useState(true)
-
   const locId = auth?.locationId || 'csc'
+  const lang = currentLanguage
 
   const fetchAll = useCallback(async () => {
     if (!auth) return
@@ -34,7 +35,7 @@ export default function SubscriberList() {
   useEffect(() => { fetchAll() }, [fetchAll])
 
   const exportCSV = () => {
-    const header = 'Name,Email,Phone,Opt-In Date\n'
+    const header = `${t('subscribers.colName', undefined, lang)},${t('subscribers.colEmail', undefined, lang)},${t('subscribers.colPhone', undefined, lang)},${t('subscribers.colOptIn', undefined, lang)}\n`
     const rows = subscribers.map(s =>
       `"${s.first_name} ${s.last_name}","${s.email}","${s.phone}","${new Date(s.check_in_at).toLocaleDateString()}"`
     ).join('\n')
@@ -47,31 +48,32 @@ export default function SubscriberList() {
     URL.revokeObjectURL(url)
   }
 
-  if (loading) return <p style={{ color: '#999' }}>Loading...</p>
+  if (loading) return <p style={{ color: '#999' }}>{t('visitorLog.loading', undefined, lang)}</p>
 
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h2 className="page-header" style={{ margin: 0 }}>Subscriber Directory</h2>
+        <h2 className="page-header" style={{ margin: 0, border: 'none' }}>{t('subscribers.title', undefined, lang)}</h2>
         <button className="btn btn-primary" onClick={exportCSV} disabled={subscribers.length === 0}>
-          📥 Export CSV
+          <span className="glyphicon glyphicon-download-alt" style={{ marginRight: 6 }}></span>
+          {t('subscribers.export', undefined, lang)}
         </button>
       </div>
-      <p>Visitors who opted into email communications.</p>
+      <p>{t('subscribers.desc', undefined, lang)}</p>
 
       <div className="table-responsive">
         <table className="table table-striped">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Opt-In Date</th>
+              <th>{t('subscribers.colName', undefined, lang)}</th>
+              <th>{t('subscribers.colEmail', undefined, lang)}</th>
+              <th>{t('subscribers.colPhone', undefined, lang)}</th>
+              <th>{t('subscribers.colOptIn', undefined, lang)}</th>
             </tr>
           </thead>
           <tbody>
             {subscribers.length === 0 ? (
-              <tr><td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#999' }}>No subscribers found.</td></tr>
+              <tr><td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#999' }}>{t('subscribers.noRecords', undefined, lang)}</td></tr>
             ) : subscribers.map((s, i) => (
               <tr key={i}>
                 <td><strong>{s.first_name} {s.last_name}</strong></td>

@@ -514,7 +514,7 @@ export default function KioskStepper() {
             </p>
             <button className="btn btn-default" onClick={resetToWelcome} style={{ marginTop: '0.5rem' }}>
               <span className="glyphicon glyphicon-chevron-left" style={{ marginRight: 6 }}></span>
-              Return to Start
+              {t('returnToStart', undefined, currentLanguage)}
             </button>
           </div>
         )

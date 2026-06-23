@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '../../context/AppContext'
+import { t } from '../../services/translations'
 
 export default function QrCode() {
-  const { auth } = useApp()
+  const { auth, currentLanguage } = useApp()
   const [qrUrl, setQrUrl] = useState('')
   const locId = auth?.locationId || 'csc'
   const locName = locId === 'bookstore' ? 'Bookstore' : 'CSC'
+  const lang = currentLanguage
 
   useEffect(() => {
     const base = `${window.location.protocol}//${window.location.host}`
@@ -37,16 +39,17 @@ export default function QrCode() {
 
   return (
     <>
-      <h2 className="page-header">QR Code — {locName}</h2>
-      <p className="lead">
-        Print or display this QR code at the {locName} greeting desk for mobile check-in.
-      </p>
+      <h2 className="page-header">{t('qr.title', { location: locName }, lang)}</h2>
+      <p className="lead">{t('qr.desc', { location: locName }, lang)}</p>
 
       <div className="row">
         <div className="col-sm-6 col-sm-offset-3">
           <div className="panel panel-default" style={{ textAlign: 'center', padding: '2rem' }}>
             <div className="panel-body">
-              <h3><span className="glyphicon glyphicon-phone" style={{ marginRight: 8 }}></span>{locName} Check-In</h3>
+              <h3>
+                <span className="glyphicon glyphicon-phone" style={{ marginRight: 8 }}></span>
+                {t('qr.heading', { location: locName }, lang)}
+              </h3>
               <div style={{ margin: '1.5rem 0' }}>
                 {qrUrl && (
                   <img
@@ -59,7 +62,7 @@ export default function QrCode() {
               <p style={{ fontSize: '0.85rem', color: '#6B7C96', wordBreak: 'break-all' }}>{qrUrl}</p>
               <button className="btn btn-default" onClick={openPrintView}>
                 <span className="glyphicon glyphicon-print" style={{ marginRight: 6 }}></span>
-                Print Check-In Form
+                {t('qr.print', undefined, lang)}
               </button>
             </div>
           </div>

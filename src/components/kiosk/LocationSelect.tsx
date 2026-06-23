@@ -10,6 +10,7 @@ const LOCATIONS = [
 export default function LocationSelect() {
   const navigate = useNavigate()
   const { currentLanguage, setKioskLocation } = useApp()
+  const lang = currentLanguage
 
   const handleCheckin = (locId: string) => {
     setKioskLocation(locId as 'csc' | 'bookstore')
@@ -22,11 +23,10 @@ export default function LocationSelect() {
         <div className="row">
           <div className="col-sm-12 text-center" style={{ marginBottom: '2.5rem' }}>
             <h1 className="page-header" style={{ border: 'none', margin: 0 }}>
-              UC San Diego Passports
+              {t('site.name', undefined, lang)}
             </h1>
             <p className="lead" style={{ maxWidth: 500, margin: '0.5rem auto 0' }}>
-              Visitor check-in and queue management for Passport Services.
-              Check in at the kiosk or use your phone.
+              {t('kiosk.subwelcome', undefined, lang)}
             </p>
           </div>
         </div>
@@ -46,14 +46,14 @@ export default function LocationSelect() {
                   <span className={`glyphicon glyphicon-${loc.icon}`}
                     style={{ fontSize: '3rem', display: 'block', marginBottom: '0.75rem' }}></span>
                   <h3 className="panel-title" style={{ fontSize: '1.5rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    {t('checkin.at', { location: loc.name }, currentLanguage)}
+                    {t('checkin.at', { location: loc.name }, lang)}
                   </h3>
                 </div>
                 <div className="panel-body">
                   <p style={{ color: '#6B7C96', margin: 0 }}>{loc.desc}</p>
                   <button className="btn btn-primary btn-lg" style={{ marginTop: '1rem', minWidth: 200 }}>
                     <span className="glyphicon glyphicon-log-in" style={{ marginRight: 8 }}></span>
-                    Check In
+                    {t('kiosk.start', undefined, lang)}
                   </button>
                 </div>
               </div>
@@ -61,20 +61,6 @@ export default function LocationSelect() {
           ))}
         </div>
 
-        <div className="row">
-          <div className="col-sm-12 text-center">
-            <hr style={{ maxWidth: 200, margin: '2rem auto', borderColor: '#ddd' }} />
-            <a
-              href="/dashboard/login"
-              className="btn btn-default btn-lg"
-              onClick={e => { e.preventDefault(); navigate('/dashboard/login') }}
-            >
-              <span className="glyphicon glyphicon-lock" style={{ marginRight: 8 }}></span>
-              {t('dashboard.link', undefined, currentLanguage)}
-              <span className="glyphicon glyphicon-chevron-right" style={{ marginLeft: 8, fontSize: '0.8rem' }}></span>
-            </a>
-          </div>
-        </div>
       </div>
     </div>
   )

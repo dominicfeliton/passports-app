@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useApp } from '../../context/AppContext'
+import { t } from '../../services/translations'
 
 interface Question {
   title: string
@@ -18,10 +19,11 @@ const DEFAULT_QUESTIONS: Questions = {
 }
 
 export default function FormQuestionsEditor() {
-  const { auth } = useApp()
+  const { auth, currentLanguage } = useApp()
   const [questions, setQuestions] = useState<Questions>(DEFAULT_QUESTIONS)
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
+  const lang = currentLanguage
 
   useEffect(() => {
     const fetchQs = async () => {
@@ -47,12 +49,12 @@ export default function FormQuestionsEditor() {
         body: JSON.stringify(questions),
       })
       if (res.ok) {
-        setMsg('Questions saved successfully.')
+        setMsg(t('formQuestions.saved', undefined, lang))
       } else {
-        setMsg('Failed to save.')
+        setMsg(t('formQuestions.failed', undefined, lang))
       }
     } catch {
-      setMsg('Error saving.')
+      setMsg(t('formQuestions.error', undefined, lang))
     } finally {
       setSaving(false)
     }
@@ -71,11 +73,11 @@ export default function FormQuestionsEditor() {
 
   return (
     <>
-      <h2 className="page-header" style={{ margin: 0 }}>Form Questions</h2>
-      <p className="lead" style={{ marginTop: 0 }}>Edit the questions shown on the kiosk document checklist.</p>
+      <h2 className="page-header" style={{ margin: 0 }}>{t('formQuestions.title', undefined, lang)}</h2>
+      <p className="lead" style={{ marginTop: 0 }}>{t('formQuestions.desc', undefined, lang)}</p>
 
       {msg && (
-        <div className={`alert ${msg.includes('success') ? 'alert-success' : 'alert-danger'}`} role="alert">
+        <div className={`alert ${msg.includes('success') || msg.includes('exitosamente') || msg.includes('成功') || msg.includes('đã được') ? 'alert-success' : 'alert-danger'}`} role="alert">
           {msg}
         </div>
       )}
@@ -89,7 +91,7 @@ export default function FormQuestionsEditor() {
           </div>
           <div className="panel-body">
             <div className="form-group">
-              <label>Heading (shown on kiosk)</label>
+              <label>{t('formQuestions.heading', undefined, lang)}</label>
               <input
                 type="text"
                 className="form-control"
@@ -98,7 +100,7 @@ export default function FormQuestionsEditor() {
               />
             </div>
             <div className="form-group">
-              <label>Description (shown under heading)</label>
+              <label>{t('formQuestions.description', undefined, lang)}</label>
               <textarea
                 className="form-control"
                 rows={3}
@@ -112,10 +114,11 @@ export default function FormQuestionsEditor() {
 
       <div style={{ display: 'flex', gap: '1rem' }}>
         <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-          {saving ? 'Saving...' : <><span className="glyphicon glyphicon-floppy-disk" style={{ marginRight: 6 }}></span>Save</>}
+          <span className="glyphicon glyphicon-floppy-disk" style={{ marginRight: 6 }}></span>
+          {saving ? t('formQuestions.saving', undefined, lang) : t('formQuestions.save', undefined, lang)}
         </button>
         <button className="btn btn-default" onClick={resetDefaults}>
-          Reset Defaults
+          {t('formQuestions.reset', undefined, lang)}
         </button>
       </div>
     </>

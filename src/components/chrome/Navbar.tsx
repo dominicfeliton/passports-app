@@ -1,21 +1,29 @@
+import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useApp, type Language } from '../../context/AppContext'
+import { t } from '../../services/translations'
 
 const languages: { code: Language; label: string }[] = [
-  { code: 'en', label: 'EN' },
-  { code: 'es', label: 'ES' },
+  { code: 'en', label: 'English' },
+  { code: 'es', label: 'Español' },
   { code: 'zh', label: '中文' },
-  { code: 'vi', label: 'VI' },
+  { code: 'vi', label: 'Tiếng Việt' },
 ]
 
 export default function Navbar() {
   const navigate = useNavigate()
   const location = useLocation()
   const { currentLanguage, setLanguage, auth, logout } = useApp()
+  const [langOpen, setLangOpen] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   const path = location.pathname
   const isDashboard = path.startsWith('/dashboard')
   const isKiosk = path.startsWith('/kiosk') || path.startsWith('/mobile')
+  const isLogin = path === '/dashboard/login'
+  const lang = currentLanguage
+
+  const closeMobile = () => setMobileOpen(false)
 
   return (
     <nav className="navbar navbar-default navbar-static-top" role="navigation">
@@ -24,11 +32,9 @@ export default function Navbar() {
           <button
             type="button"
             className="navbar-toggle"
-            data-toggle="offcanvas"
-            data-target=".navmenu"
-            data-canvas="body"
-            aria-expanded="false"
-            aria-controls="navbar"
+            onClick={() => setMobileOpen(o => !o)}
+            aria-expanded={mobileOpen}
+            aria-controls="site-nav"
           >
             <span className="sr-only">Toggle navigation</span>
             <div className="col-sm-1 mobile-nav-bars">
@@ -47,55 +53,70 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="collapse navbar-collapse" id="site-nav">
+        <div className={`collapse navbar-collapse ${mobileOpen ? 'in' : ''}`} id="site-nav">
           <ul className="nav navbar-nav">
             {!isDashboard && !isKiosk && (
-              <>
-                <li className={path === '/' ? 'active' : ''}>
-                  <a href="/" onClick={e => { e.preventDefault(); navigate('/') }}>Home</a>
-                </li>
-              </>
+              <li className={path === '/' ? 'active' : ''}>
+                <a href="/" onClick={e => { e.preventDefault(); navigate('/'); closeMobile() }}>
+                  {t('nav.home', undefined, lang)}
+                </a>
+              </li>
             )}
             {isDashboard && auth && (
               <>
                 <li className={path.includes('visitor-log') ? 'active' : ''}>
-                  <a href="/dashboard/visitor-log" onClick={e => { e.preventDefault(); navigate('/dashboard/visitor-log') }}>
-                    Visitor Log
+                  <a href="/dashboard/visitor-log" onClick={e => { e.preventDefault(); navigate('/dashboard/visitor-log'); closeMobile() }}>
+                    {t('nav.visitorLog', undefined, lang)}
                   </a>
                 </li>
                 <li className={path.includes('reports') ? 'active' : ''}>
-                  <a href="/dashboard/reports" onClick={e => { e.preventDefault(); navigate('/dashboard/reports') }}>
-                    Reports
+                  <a href="/dashboard/reports" onClick={e => { e.preventDefault(); navigate('/dashboard/reports'); closeMobile() }}>
+                    {t('nav.reports', undefined, lang)}
                   </a>
                 </li>
                 <li className={path.includes('questions') ? 'active' : ''}>
-                  <a href="/dashboard/questions" onClick={e => { e.preventDefault(); navigate('/dashboard/questions') }}>
-                    Form Questions
+                  <a href="/dashboard/questions" onClick={e => { e.preventDefault(); navigate('/dashboard/questions'); closeMobile() }}>
+                    {t('nav.formQuestions', undefined, lang)}
                   </a>
                 </li>
                 <li>
-                  <a href="/" onClick={e => { e.preventDefault(); logout(); navigate('/') }}>
-                    Lock Dashboard
+                  <a href="/" onClick={e => { e.preventDefault(); logout(); navigate('/'); closeMobile() }}>
+                    {t('nav.lockDashboard', undefined, lang)}
                   </a>
                 </li>
               </>
             )}
             {isKiosk && (
               <li className="active">
-                <a href="#">Check-In</a>
+                <a href="#">{t('nav.checkin', undefined, lang)}</a>
               </li>
             )}
           </ul>
 
           <ul className="nav navbar-nav navbar-right">
-            <li className="dropdown">
-              <a href="#" className="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                {languages.find(l => l.code === currentLanguage)?.label || 'EN'} <span className="caret"></span>
+            {/* Employee Dashboard — always visible, with lock icon */}
+            {!isDashboard && !isLogin && (
+              <li>
+                <a href="/dashboard/login" onClick={e => { e.preventDefault(); navigate('/dashboard/login'); closeMobile() }}>
+                  <span className="glyphicon glyphicon-lock" style={{ marginRight: 6 }}></span>
+                  {t('dashboard.link', undefined, lang)}
+                </a>
+              </li>
+            )}
+            <li className={`dropdown ${langOpen ? 'open' : ''}`}>
+              <a href="#" className="dropdown-toggle" onClick={e => { e.preventDefault(); setLangOpen(o => !o) }}
+                role="button" aria-haspopup="true" aria-expanded={langOpen}>
+                {languages.find(l => l.code === currentLanguage)?.label || 'English'}
+                <span className="caret" style={{ marginLeft: 4 }}></span>
               </a>
-              <ul className="dropdown-menu">
+              <ul className="dropdown-menu" style={{ display: langOpen ? 'block' : 'none' }}>
                 {languages.map(l => (
                   <li key={l.code} className={currentLanguage === l.code ? 'active' : ''}>
-                    <a href="#" onClick={e => { e.preventDefault(); setLanguage(l.code) }}>
+                    <a href="#" onClick={e => {
+                      e.preventDefault()
+                      setLanguage(l.code)
+                      setLangOpen(false)
+                    }}>
                       {l.label}
                     </a>
                   </li>

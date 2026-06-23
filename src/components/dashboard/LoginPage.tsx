@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const lang = currentLanguage
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,7 +21,7 @@ export default function LoginPage() {
       login(result.token, result.location_id as 'csc' | 'bookstore')
       navigate('/dashboard/visitor-log')
     } catch {
-      setError('Invalid password. Please try again.')
+      setError(t('login.invalid', undefined, lang))
     } finally {
       setLoading(false)
     }
@@ -32,24 +33,24 @@ export default function LoginPage() {
         <div className="row">
           <div className="col-sm-6 col-sm-offset-3">
             <ol className="breadcrumb breadcrumbs-list" aria-label="Breadcrumb">
-              <li><a href="/" onClick={e => { e.preventDefault(); navigate('/') }}>Home</a></li>
-              <li className="active">{t('dashboard.login', undefined, currentLanguage)}</li>
+              <li><a href="/" onClick={e => { e.preventDefault(); navigate('/') }}>{t('nav.home', undefined, lang)}</a></li>
+              <li className="active">{t('login.title', undefined, lang)}</li>
             </ol>
 
             <div className="panel panel-primary">
               <div className="panel-heading">
-                <h3 className="panel-title">{t('dashboard.login', undefined, currentLanguage)}</h3>
+                <h3 className="panel-title">{t('login.title', undefined, lang)}</h3>
               </div>
               <div className="panel-body">
                 <form onSubmit={handleSubmit}>
                   <div className="form-group">
-                    <label className="control-label" htmlFor="password">Location Password</label>
+                    <label className="control-label" htmlFor="password">{t('login.password', undefined, lang)}</label>
                     <input type="password" id="password"
                       className="form-control input-lg"
-                      placeholder="Enter your location's dashboard password"
+                      placeholder={t('login.placeholder', undefined, lang)}
                       value={password} onChange={e => setPassword(e.target.value)}
                       autoFocus />
-                    <p className="help-block">Use the password for your location (CSC or Bookstore).</p>
+                    <p className="help-block">{t('login.help', undefined, lang)}</p>
                   </div>
 
                   {error && (
@@ -61,7 +62,7 @@ export default function LoginPage() {
 
                   <button type="submit" className="btn btn-primary btn-lg btn-block"
                     disabled={loading || !password}>
-                    {loading ? 'Signing in…' : 'Sign In'}
+                    {loading ? t('login.signingIn', undefined, lang) : t('login.signIn', undefined, lang)}
                   </button>
                 </form>
               </div>
@@ -70,7 +71,8 @@ export default function LoginPage() {
             <div className="text-center">
               <a href="/" onClick={e => { e.preventDefault(); navigate('/') }}
                 className="btn btn-link">
-                ← Back to Home
+                <span className="glyphicon glyphicon-chevron-left" style={{ marginRight: 4 }}></span>
+                {t('login.back', undefined, lang)}
               </a>
             </div>
           </div>

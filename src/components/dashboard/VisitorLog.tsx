@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useApp } from '../../context/AppContext'
+import { t } from '../../services/translations'
 
 interface Visitor {
   id: string
@@ -34,12 +35,13 @@ function mark(v: boolean | null) {
 }
 
 export default function VisitorLog() {
-  const { auth } = useApp()
+  const { auth, currentLanguage } = useApp()
   const [visitors, setVisitors] = useState<Visitor[]>([])
   const [search, setSearch] = useState('')
   const [filterDate, setFilterDate] = useState('')
   const [loading, setLoading] = useState(true)
   const locId = auth?.locationId || 'csc'
+  const lang = currentLanguage
 
   const fetchVisitors = useCallback(async () => {
     if (!auth) return
@@ -98,10 +100,10 @@ export default function VisitorLog() {
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
-        <h2 className="page-header" style={{ margin: 0, border: 'none' }}>Visitor Log</h2>
+        <h2 className="page-header" style={{ margin: 0, border: 'none' }}>{t('visitorLog.title', undefined, lang)}</h2>
         <button className="btn btn-primary" onClick={exportCSV}>
           <span className="glyphicon glyphicon-download-alt" style={{ marginRight: 6 }}></span>
-          Export CSV
+          {t('visitorLog.export', undefined, lang)}
         </button>
       </div>
 
@@ -109,7 +111,7 @@ export default function VisitorLog() {
         <div className="panel-body">
           <div className="row">
             <div className="col-sm-5">
-              <input type="text" className="form-control" placeholder="Search by name, email, phone…"
+              <input type="text" className="form-control" placeholder={t('visitorLog.search', undefined, lang)}
                 value={search} onChange={e => setSearch(e.target.value)} />
             </div>
             <div className="col-sm-3">
@@ -118,7 +120,7 @@ export default function VisitorLog() {
             </div>
             <div className="col-sm-2">
               <button className="btn btn-default btn-block" onClick={() => { setSearch(''); setFilterDate('') }}>
-                Clear
+                {t('visitorLog.clear', undefined, lang)}
               </button>
             </div>
           </div>
@@ -130,23 +132,23 @@ export default function VisitorLog() {
           <table className="table table-striped table-hover" style={{ margin: 0 }}>
             <thead>
               <tr>
-                <th>Visitor</th>
-                <th>Service</th>
-                <th>Status</th>
-                <th style={{ textAlign: 'center' }}>App</th>
-                <th style={{ textAlign: 'center' }}>Photo</th>
-                <th style={{ textAlign: 'center' }}>Citizen</th>
-                <th style={{ textAlign: 'center' }}>ID</th>
-                <th style={{ textAlign: 'center' }}>Pay</th>
-                <th>Notes</th>
-                <th></th>
+                <th>{t('visitorLog.colVisitor', undefined, lang)}</th>
+                <th>{t('visitorLog.colService', undefined, lang)}</th>
+                <th>{t('visitorLog.colStatus', undefined, lang)}</th>
+                <th style={{ textAlign: 'center' }}>{t('visitorLog.colApp', undefined, lang)}</th>
+                <th style={{ textAlign: 'center' }}>{t('visitorLog.colPhoto', undefined, lang)}</th>
+                <th style={{ textAlign: 'center' }}>{t('visitorLog.colCitizen', undefined, lang)}</th>
+                <th style={{ textAlign: 'center' }}>{t('visitorLog.colId', undefined, lang)}</th>
+                <th style={{ textAlign: 'center' }}>{t('visitorLog.colPayment', undefined, lang)}</th>
+                <th>{t('visitorLog.colNotes', undefined, lang)}</th>
+                <th>{t('visitorLog.colAction', undefined, lang)}</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={10} style={{ textAlign: 'center', padding: '3rem', color: '#999' }}>Loading...</td></tr>
+                <tr><td colSpan={10} style={{ textAlign: 'center', padding: '3rem', color: '#999' }}>{t('visitorLog.loading', undefined, lang)}</td></tr>
               ) : visitors.length === 0 ? (
-                <tr><td colSpan={10} style={{ textAlign: 'center', padding: '3rem', color: '#999' }}>No records match current filters.</td></tr>
+                <tr><td colSpan={10} style={{ textAlign: 'center', padding: '3rem', color: '#999' }}>{t('visitorLog.noRecords', undefined, lang)}</td></tr>
               ) : visitors.map(v => {
                 const checkIn = new Date(v.check_in_at)
                 const dateStr = checkIn.toLocaleDateString()
@@ -179,7 +181,7 @@ export default function VisitorLog() {
                         {dateStr} {timeStr}
                       </div>
                       <div style={{ color: '#6B7C96', fontSize: '0.8rem' }}>
-                        Out: {outStr}
+                        {t('visitorLog.signedOut', undefined, lang)}: {outStr}
                       </div>
                     </td>
                     <td style={{ textAlign: 'center' }}>{isPass ? mark(v.app_complete) : '—'}</td>
@@ -189,14 +191,16 @@ export default function VisitorLog() {
                     <td style={{ textAlign: 'center' }}>{chk('payment')}</td>
                     <td>
                       <input type="text" className="form-control input-sm" style={{ width: 110 }}
-                        defaultValue={v.notes || ''} maxLength={100} placeholder="Add note…"
+                        defaultValue={v.notes || ''} maxLength={100} placeholder={t('visitorLog.addNote', undefined, lang)}
                         onBlur={e => saveNotes(v.id, e.target.value)} />
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       {v.status === 'Checked In' ? (
-                        <button className="btn btn-primary btn-xs" onClick={() => signOut(v.id)}>Sign Out</button>
+                        <button className="btn btn-primary btn-xs" onClick={() => signOut(v.id)}>
+                          {t('visitorLog.signOut', undefined, lang)}
+                        </button>
                       ) : (
-                        <span style={{ color: '#999', fontSize: '0.8rem' }}>Signed Out</span>
+                        <span style={{ color: '#999', fontSize: '0.8rem' }}>{t('visitorLog.signedOut', undefined, lang)}</span>
                       )}
                     </td>
                   </tr>
