@@ -3,8 +3,8 @@
 ## App
 
 - **Name / one-line purpose:** Passports visitor check-in and queue management for UC San Diego Passport Services (CSC and Bookstore locations).
-- **Repo:** https://github.com/shark-nado/passports-app — private? Public
-- **Image:** `ghcr.io/shark-nado/passports-app` — build workflow status: ✅
+- **Repo:** https://github.com/dominicfeliton/passports-app — private? Public
+- **Image:** `ghcr.io/dominicfeliton/passports-app` — build workflow status: ✅
 - **Stack:** Python/FastAPI + SQLite (aiosqlite), React/Vite SPA served from the same container
 
 ## Configuration

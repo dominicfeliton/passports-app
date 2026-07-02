@@ -4,8 +4,8 @@ strategy:
   type: Recreate
 
 image:
-  repository: ghcr.io/shark-nado/passports-app
-  tag: "latest"
+  repository: ghcr.io/dominicfeliton/passports-app
+  tag: "main"
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
